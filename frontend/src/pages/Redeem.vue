@@ -15,6 +15,7 @@ async function seal() {
   try {
     const r = await api.seal({})
     msg.value = `已钉扎批次 #${r.batch_id} · ${r.fact_count} 笔 · 合计 ${r.total_amount}`
+      + ` · 钉前扫描 #${r.scan_id} 新作废 ${r.scan_voided}（作废总计 ${r.voided_at_seal}）`
     await load()
   } catch (e) { err.value = e.message }
 }
@@ -26,12 +27,18 @@ onMounted(load)
       <div class="stat"><div class="k">业务日</div><div class="v">{{ preview.business_day }}</div></div>
       <div class="stat"><div class="k">待钉笔数</div><div class="v ticket">{{ preview.open_count }}</div></div>
       <div class="stat"><div class="k">待钉合计</div><div class="v ticket">{{ preview.open_total }}</div></div>
+      <div class="stat"><div class="k">待作废（未扫）</div><div class="v">{{ preview.pending_expire_count }}</div></div>
+      <div class="stat"><div class="k">已作废券码</div><div class="v">{{ preview.voided_total }}</div></div>
       <div class="stat"><div class="k">已钉扎</div><div class="v">{{ preview.already_sealed ? '是' : '否' }}</div></div>
     </div>
     <div class="row">
       <button type="button" @click="seal" :disabled="preview.already_sealed || preview.open_count===0">钉扎本日核销</button>
       <button type="button" class="ghost" @click="load">刷新预览</button>
     </div>
+    <p class="msg">open 集合已排除作废券码；钉扎时会在同一事务内先跑过期扫描再钉扎。</p>
+    <p class="msg err" v-if="preview.pending_expire_count">
+      有 {{ preview.pending_expire_count }} 张过期未核券尚未作废，钉扎将自动扫描作废。
+    </p>
     <p class="msg" v-if="msg">{{ msg }}</p>
     <p class="msg err" v-if="err">{{ err }}</p>
   </div>

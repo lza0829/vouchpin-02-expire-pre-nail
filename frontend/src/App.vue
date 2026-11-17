@@ -6,6 +6,7 @@ const route = useRoute()
 const chips = [
   { to: '/', label: '总览', tip: '今日票根' },
   { to: '/events', label: '券事件', tip: '发放·核销·作废' },
+  { to: '/expire', label: '过期扫描', tip: '作废·核对' },
   { to: '/redeem', label: '核销钉扎', tip: '事实→批次' },
   { to: '/batches', label: '钉扎批次', tip: '已钉集合' },
   { to: '/settings', label: '设置', tip: '业务日' },
@@ -27,7 +28,7 @@ const cur = computed(() => chips.find((c) => on(c.to)) || chips[0])
           <em>券钉簿</em>
         </span>
       </router-link>
-      <p class="brand-tag">券事件入湖 · 核销事实钉扎 · 批次互证</p>
+      <p class="brand-tag">券事件入湖 · 到期自动作废 · 核销事实钉扎 · 批次互证</p>
       <nav class="chips" aria-label="工位">
         <router-link
           v-for="c in chips"

@@ -22,6 +22,10 @@ export const api = {
   preview: (day) => req('/redeem/preview' + (day ? `?business_day=${encodeURIComponent(day)}` : '')),
   seal: (body) => req('/redeem/seal', { method: 'POST', body: JSON.stringify(body) }),
   batches: () => req('/batches'),
+  expireScan: (body = {}) => req('/expire/scan', { method: 'POST', body: JSON.stringify(body) }),
+  expireScans: () => req('/expire/scans'),
+  expireVoids: () => req('/expire/voids'),
+  expireReconcile: () => req('/expire/reconcile'),
   getDay: () => req('/settings/day'),
   setDay: (business_day) => req('/settings/day', { method: 'PUT', body: JSON.stringify({ business_day }) }),
 }

@@ -43,7 +43,9 @@ onMounted(load)
       <label>券码 <input v-model="form.coupon_code" placeholder="C-2xxx" /></label>
       <label>活动
         <select v-model="form.campaign_code">
-          <option v-for="c in camps" :key="c.code" :value="c.code">{{ c.code }} · {{ c.title }}</option>
+          <option v-for="c in camps" :key="c.code" :value="c.code">
+            {{ c.code }} · {{ c.title }} · {{ c.expire_window_hours > 0 ? `窗${c.expire_window_hours}h` : '无过期窗' }}
+          </option>
         </select>
       </label>
       <label>金额 <input v-model="form.amount" placeholder="可空=面额" /></label>
@@ -59,7 +61,7 @@ onMounted(load)
       <tbody>
         <tr v-for="r in rows" :key="r.id">
           <td>{{ r.id }}</td>
-          <td><span class="tag" :class="{ warn: r.event_type==='redeem' }">{{ r.event_type }}</span></td>
+          <td><span class="tag" :class="{ warn: r.event_type==='redeem', bad: r.event_type==='void' }">{{ r.event_type }}</span></td>
           <td>{{ r.coupon_code }}</td>
           <td>{{ r.campaign_code }}</td>
           <td>{{ r.amount }}</td>

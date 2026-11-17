@@ -15,18 +15,20 @@ def seed_if_empty() -> None:
             "INSERT OR REPLACE INTO settings(key, value) VALUES('business_day', ?)",
             (today,),
         )
+        # expire_window_hours：0 = 无过期窗
         campaigns = [
-            ("NEW10", "新人立减10", 10.0, 30.0),
-            ("VIP20", "会员满减20", 20.0, 100.0),
-            ("TEA5", "茶饮立减5", 5.0, 15.0),
+            ("NEW10", "新人立减10", 10.0, 30.0, 24.0),
+            ("VIP20", "会员满减20", 20.0, 100.0, 48.0),
+            ("TEA5", "茶饮立减5", 5.0, 15.0, 0.0),
         ]
-        for code, title, face, mn in campaigns:
+        for code, title, face, mn, win in campaigns:
             conn.execute(
-                "INSERT INTO campaigns(code, title, face_value, min_spend) VALUES(?,?,?,?)",
-                (code, title, face, mn),
+                "INSERT INTO campaigns(code, title, face_value, min_spend, expire_window_hours) VALUES(?,?,?,?,?)",
+                (code, title, face, mn, win),
             )
         # issue + redeem events for today and yesterday
         yday = (date.today() - timedelta(days=1)).isoformat()
+        old = (date.today() - timedelta(days=3)).isoformat()
         rows = [
             ("issue", "C-1001", "NEW10", 0, today, f"{today}T09:00:00"),
             ("issue", "C-1002", "VIP20", 0, today, f"{today}T09:10:00"),
@@ -35,6 +37,11 @@ def seed_if_empty() -> None:
             ("redeem", "C-1002", "VIP20", 20, today, f"{today}T12:30:00"),
             ("issue", "C-0901", "NEW10", 0, yday, f"{yday}T10:00:00"),
             ("redeem", "C-0901", "NEW10", 10, yday, f"{yday}T18:00:00"),
+            # 未核过期：发放于 3 天前、至今无核销，等待过期扫描作废
+            ("issue", "C-0801", "NEW10", 0, old, f"{old}T09:00:00"),
+            ("issue", "C-0802", "VIP20", 0, old, f"{old}T09:30:00"),
+            # 无过期窗活动：发放再久也不作废
+            ("issue", "C-0803", "TEA5", 0, old, f"{old}T10:00:00"),
         ]
         for et, cc, camp, amt, day, at in rows:
             cur = conn.execute(

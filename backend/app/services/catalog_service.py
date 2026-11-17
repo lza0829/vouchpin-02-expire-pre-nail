@@ -5,6 +5,8 @@ from app.repositories import settings as settings_repo
 from app.repositories import facts as fact_repo
 from app.repositories import batches as batch_repo
 from app.repositories import events as event_repo
+from app.repositories import expire as expire_repo
+from app.services import expire_service
 
 
 def dashboard() -> dict[str, Any]:
@@ -18,6 +20,7 @@ def dashboard() -> dict[str, Any]:
         events = event_repo.list_events(conn, day)
         batches = batch_repo.list_batches(conn)
         sealed_today = fact_repo.day_is_sealed(conn, day)
+        last_scan = expire_repo.latest_scan(conn)
         return {
             "business_day": day,
             "event_count": len(events),
@@ -27,6 +30,9 @@ def dashboard() -> dict[str, Any]:
             "redeem_total_today": total,
             "batch_count": len(batches),
             "day_sealed": sealed_today,
+            "voided_total": expire_repo.voided_count(conn),
+            "pending_expire_count": len(expire_service.pending_expired(conn)),
+            "last_scan_at": last_scan["ran_at"] if last_scan else None,
         }
     finally:
         conn.close()

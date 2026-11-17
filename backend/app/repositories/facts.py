@@ -30,8 +30,10 @@ def insert_fact(conn: sqlite3.Connection, **fields: Any) -> int:
 
 
 def open_facts_for_day(conn: sqlite3.Connection, business_day: str) -> list[dict[str, Any]]:
+    # 钉扎 open 集合不得含已作废券码（与 coupon_voids 作废标记互斥）
     rows = conn.execute(
-        "SELECT * FROM redeem_facts WHERE business_day=? AND status='open' ORDER BY id",
+        "SELECT * FROM redeem_facts WHERE business_day=? AND status='open'"
+        " AND coupon_code NOT IN (SELECT coupon_code FROM coupon_voids) ORDER BY id",
         (business_day,),
     ).fetchall()
     return [dict(r) for r in rows]
